@@ -1,0 +1,46 @@
+service: BB-LINE-KINTONE-TABLE-ORDER
+frameworkVersion: "3"
+
+custom:
+  defaultStage: dev
+  environment:
+    dev: ${file(./env/dev.yml)}
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  lambdaHashingVersion: 20201221
+  region: ap-northeast-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource:
+        - "*"
+  environment:
+    KN_DOMAIN: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_DOMAIN}
+    KN_USER_APPID: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_USER_APPID}
+    KN_USER_APITOKEN: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_USER_APITOKEN}
+    KN_ORDER_APPID: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_ORDER_APPID}
+    KN_ITEMLIST_APITOKEN: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_ITEMLIST_APITOKEN}
+    KN_ORDER_APITOKEN: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):KN_ORDER_APITOKEN}
+    LINE_ACCESS_TOKEN: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):LINE_ACCESS_TOKEN}
+    LINE_CHANNEL_SECRET: ${file(./env/${opt:stage, self:custom.defaultStage}.yml):LINE_CHANNEL_SECRET}
+
+functions:
+  follow:
+    handler: follow.handler
+    events:
+      - http:
+          path: bb-api/line-table-order/follow
+          method: post
+          cors: true
+  order:
+    handler: order.handler
+    events:
+      - http:
+          path: bb-api/line-table-order/order
+          method: post
+          cors: true
